@@ -1,3 +1,5 @@
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,7 +11,6 @@ freq = 10 # 周波数(10Hz) =>正弦波の周期0.1sec
 freq2 = 5
 amp = 1 # 振幅
 amp2 = 3
-cycle = 
 t = np.arange(0, N*dt, dt) # 時間軸
 f = amp * np.sin(2*np.pi*freq*t) #+ amp2 * np.sin(2*np.pi*freq2*t)# 信号（周波数10、振幅1の正弦波）
 # グラフ表示
@@ -64,4 +65,3 @@ max = sorted(F_abs_amp, reverse=True)
 np.savetxt("abc.csv", np.vstack(max[:int(N)+1]).T, delimiter=",")
 plt.plot(fq[:int(N/16)+1], F_abs_amp[:int(N/16)+1]) # ナイキスト定数まで表示
 plt.show()
-
