@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pyaudio
 # matplotlib inline
 
 # 簡単な信号の作成
@@ -10,8 +11,9 @@ amp = 1 # 振幅
 t = np.arange(0, N*dt, dt) # 時間軸
 f = amp * np.sin(2*np.pi*freq*t) # 信号（周波数10、振幅1の正弦波）
 
+
 # 高速フーリエ変換(FFT)
-F = np.fft.fft(f) #
+F = np.fft.fft(f) 
 
 # FFTの複素数結果を絶対に変換
 F_abs = np.abs(F)
@@ -28,6 +30,8 @@ fig = plt.figure(figsize=(12, 4))
 ax2 = fig.add_subplot(121)
 plt.xlabel('time(sec)', fontsize=14)
 plt.ylabel('amplitude', fontsize=14)
+
+
 plt.plot(t, f)
 
 # FFTのグラフ（周波数軸）
@@ -35,4 +39,5 @@ ax2 = fig.add_subplot(122)
 plt.xlabel('freqency(Hz)', fontsize=14)
 plt.ylabel('amplitude', fontsize=14)
 plt.plot(fq[:int(N/2)+1], F_abs_amp[:int(N/2)+1]) # ナイキスト定数まで表示
+print(f)
 plt.show()
