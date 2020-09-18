@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt     #グラフ化用
 chunk = 2048             #音声データメモリーサイズ指定
 FORMAT = pyaudio.paInt16        #16進数に指定
 CHANNELS = 1                    #モノラルに指定
-RATE = 96000                     #サンプリング速度
+RATE = 96000                     #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
+T = 1/RATE
 RECORD_SECONDS = 1              #３秒録音
-t = np.arange(0, 47104*1/RATE, 1/RATE)
+t = np.arange(0, chunk*T, T) #時間軸が1/2倍違う
 
 p = pyaudio.PyAudio()           #!!!要調べ！！！
 
@@ -38,13 +39,13 @@ result = np.frombuffer(data,dtype="int32") / float (2**15)
 with open ('file1.txt', 'w') as f:
     np.set_printoptions(threshold=np.inf)
     print(result, file=ｆ)
-    cal = 1/len(result)/3
+    cal = len(result)
     print(cal)
 
-result2 = np.where((result > -100) & (result < 100) , 0 , result)
-abs_result = np.abs(result)
-F = np.fft.fft(result) #
+result2 = np.where((result > -100) & (result < 100) , 0 , result) 
 
+
+F = np.fft.fft(result2) 
 # FFTの複素数結果を絶対に変換
 F_abs = np.abs(F)
 # 振幅をもとの信号に揃える
@@ -52,7 +53,7 @@ F_abs_amp = F_abs / chunk * 2 # 交流成分はデータ数で割って2倍
 F_abs_amp[0] = F_abs_amp[0] / 2 # 直流成分（今回は扱わないけど）は2倍不要
 
 # 周波数軸のデータ作成
-fq = np.linspace(0, 1.0/RATE, chunk) # 周波数軸　linspace(開始,終了,分割数)
+fq = np.linspace(0, 1.0/T, chunk) # 周波数軸　linspace(開始,終了,分割数)
 
 # グラフ表示
 fig = plt.figure(figsize=(12, 4))
