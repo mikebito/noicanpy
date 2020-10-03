@@ -65,17 +65,18 @@ F_abs_amp = F_abs / RATE * 2 # 交流成分はデータ数で割って2倍
 
 fq = np.linspace(0, 1.0/T, RATE) # 周波数軸　linspace(開始,終了,分割数)
 amparraynumber = np.where(F_abs_amp > 10)
-
+biggestAmp = F_abs_amp[np.argmax(F_abs_amp)]
 print(np.where(F_abs_amp > 10))
-print("最大振幅 %i"%(F_abs_amp[np.argmax(amparraynumber)]))
+print("最大振幅 %i"%(F_abs_amp[np.argmax(F_abs_amp)]))
 fqarray = fq[amparraynumber]
-
+ 
 samples = 0
 for i in range (len(amparraynumber)):
     samples += (np.sin(2*np.pi*np.arange(RATE*10.0)*fqarray[i]/RATE)).astype(np.float32)
+    print(F_abs_amp[i]/biggestAmp)
 # samples = (np.sin(2*np.pi*np.arange(RATE*2.0)*fqarray[]/RATE)).astype(np.float32)
 stream.write(1.0*samples)
-print(samples)
+# print(samples)
 
 stream.stop_stream()
 stream.close()
