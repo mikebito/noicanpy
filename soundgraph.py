@@ -10,7 +10,7 @@ CHANNELS = 1                    #モノラルに指定
 RATE = 43008             #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
 T = 1/RATE
 RECORD_SECONDS = 1           #３秒録音
-inputIndexNumber = int(2)
+inputIndexNumber = int(input('type input index number'))
 outputIndexNumber = int(1)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
 
@@ -88,30 +88,7 @@ F_abs = np.abs(F)
 F_abs_amp = F_abs / RATE * 2 # 交流成分はデータ数で割って2倍
 
 # F_abs_amp2 = np.where((F_abs_amp < 10) , 0 , F_abs_amp) 
-allresult = 0
-firstloop = True
-for i in range (len(result)):
-    if result[i] > 0 or result[i] < 0:
-        if firstloop:
-            aboveZeroPoint = i
-            allresult += result[i]
-            firstloop = False
-            pass
-        else:
-            allresult += result[i]
-            pass
-    else:
-        pass
 
-
-resultaverage = allresult/(len(result) - aboveZeroPoint)
-print("平均 %i 最初のゼロ以上の位置 %f"% (resultaverage,aboveZeroPoint))
-result3 = np.arange(len(result))
-for i in range (len(result)):
-    if i < aboveZeroPoint:
-        result3[i] = result[i]
-    else:
-        result3[i] = result[i] - resultaverage
 
 # l = [0] * (len(t) - len(result3))
 # result4 = np.insert(result3,0,l)
@@ -128,12 +105,14 @@ biggestAmp = F_abs_amp[np.argmax(F_abs_amp)]
 print("最大振幅 %i"%(F_abs_amp[np.argmax(F_abs_amp)]))
 fqarray = fq[amparraynumber] 
 print("F_amp_abs - length %a, amparrraynumber - length %o, fqarray - length %f" % (len(F_abs_amp),len(amparraynumber),len(fqarray)))
-samples = 0
+s = 0
+samples = []
 for i in range (len(amparraynumber)):
-    samples += (np.sin(2*np.pi*(F_abs_amp[i]/biggestAmp)*10000*np.arange(RATE*20.0)*fqarray[i]/RATE)).astype(np.float32)
+    s = ((F_abs_amp[i]/biggestAmp)*np.sin(2*np.pi*np.arange(RATE*20.0)*fqarray[i]/RATE)).astype(np.float32)
     # samples += (np.sin(2*np.pi*np.arange(RATE*20.0)*fqarray[i]/RATE)).astype(np.float32)
     print(F_abs_amp[i]/biggestAmp)
-stream.write(1.0*samples)
+    samples.append(s)
+# stream.write(1.0*samples)
 # print(samples)
 
 stream.stop_stream()
