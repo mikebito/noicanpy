@@ -1,10 +1,10 @@
 import pyaudio                      #録音用    
 import numpy as np                  #計算用
 import matplotlib.pyplot as plt     #グラフ化用
-import pandas
+import itertools
 
 #設定
-chunk = 2048         #音声データメモリーサイズ指定
+chunk = 1024         #音声データメモリーサイズ指定
 FORMAT = pyaudio.paInt32        #16進数に指定
 CHANNELS = 1                    #モノラルに指定
 RATE = 43008             #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
@@ -57,6 +57,7 @@ with open ('file1.txt', 'w') as f:
 
 allresult = 0
 firstloop = True
+
 for i in range (len(result)):
     if result[i] > 0 or result[i] < 0:
         if firstloop:
@@ -99,7 +100,7 @@ F_abs_amp = F_abs / RATE * 2 # 交流成分はデータ数で割って2倍
 
 # F_abs_amp[0:19] = 0
 fq = np.linspace(0, 1.0/T, RATE) # 周波数軸　linspace(開始,終了,分割数)
-amparraynumber = np.where(F_abs_amp > 10) #10以上の位置を所得
+amparraynumber = np.where(F_abs_amp > 100) #10以上の位置を所得
 biggestAmp = F_abs_amp[np.argmax(F_abs_amp)]
 # print(np.where(F_abs_amp > 10))
 print("最大振幅 %i"%(F_abs_amp[np.argmax(F_abs_amp)]))
@@ -107,21 +108,26 @@ fqarray = fq[amparraynumber]
 print("F_amp_abs - length %a, amparrraynumber - length %o, fqarray - length %f" % (len(F_abs_amp),len(amparraynumber),len(fqarray)))
 s = 0
 samples = []
+firstloop = True
+print("now generating sound...")
 for i in range (len(amparraynumber)):
-    s = ((F_abs_amp[i]/biggestAmp)*np.sin(2*np.pi*np.arange(RATE*20.0)*fqarray[i]/RATE)).astype(np.float32)
-    # samples += (np.sin(2*np.pi*np.arange(RATE*20.0)*fqarray[i]/RATE)).astype(np.float32)
-    print(F_abs_amp[i]/biggestAmp)
-    samples.append(s)
-# stream.write(1.0*samples)
-# print(samples)
+    if firstloop:
+        for j in np.arange(len(fqarray)):
+            firstloop = False
+            s = 1000 * ((F_abs_amp[i]/biggestAmp) *np.sin(2*np.pi*np.arange(RATE*1.0)*fqarray[j]/RATE))#.astype(np.float32)
+            # print(F_abs_amp[i]/biggestAmp)
+            samples.insert(j,s)
+    else:
+        for j in np.arange(len(fqarray)):
+            s = 1000 * ((F_abs_amp[i]/biggestAmp) * np.sin(2*np.pi*np.arange(RATE*1.0)*fqarray[j]/RATE)).astype(np.float32)
+            samples[j] += s
+print("sound generate ended")
 
-stream.stop_stream()
-stream.close()
-
-p.terminate()
 # print(F_abs_amp)
 # グラフ表示
 fig = plt.figure(figsize=(12, 4))
+
+# plt.plot(samples)
 # 信号のグラフ（時間軸）
 ax2 = fig.add_subplot(121)
 plt.xlabel('time(sec)', fontsize=14)
@@ -133,4 +139,19 @@ ax2 = fig.add_subplot(122)
 plt.xlabel('freqency(Hz)', fontsize=14)
 plt.ylabel('amplitude', fontsize=14)
 plt.plot(fq[:int(RATE/2)+1], F_abs_amp[:int(RATE/2)+1]) # ナイキスト定数まで表示
+print("plotting graph...")
 plt.show()
+samples2 = list(itertools.chain.from_iterable(samples))
+samples3 = np.empty(len(samples2))
+print("samples_length-%i,samples2-length-%s,samples2_dimention-%a "%(len(samples2),len(samples3),samples3.ndim))
+samples2[:] = samples
+samples4 = np.array(samples3)
+samples5 = samples4.tobytes()
+# data3 = b"".join(samples2)
+# sound = np.frombuffer(data3,dtype="int32") / float (2**15)
+print("playing sound")
+stream.write(samples5)
+stream.stop_stream()
+stream.close()
+
+p.terminate()
