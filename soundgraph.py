@@ -98,7 +98,7 @@ sin_curve = 0
 slen = int(RATE*5)
 print("now generating sound...")
 for i in range (len(amparraynumber2)):
-    s +=  (np.sin(2*np.pi*np.arange(slen)*amparraynumber2[i]/RATE*5) * (F_abs_amp[amparraynumber2[i]]/biggestAmp) )
+    s +=  (np.sin(2*np.pi*np.arange(slen)*amparraynumber2[i]/(RATE*5)) * (F_abs_amp[amparraynumber2[i]]/biggestAmp) )
 
 print("sound generate ended")
 
