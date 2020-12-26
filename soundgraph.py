@@ -2,6 +2,8 @@ import pyaudio                      #録音用
 import numpy as np                  #計算用
 import matplotlib.pyplot as plt     #グラフ化用
 import itertools
+import struct
+import wave
 
 #設定
 chunk = 1024         #音声データメモリーサイズ指定
@@ -32,13 +34,10 @@ all = [] #リスト作成
 for i in range (0,int(RATE / chunk * RECORD_SECONDS)): 
     data = stream.read(chunk)
     all.append(data)
-
-# print(all)
+print(all)
 print("Finished Recording.")
 
-
- #!!!要調べ！！！
-data2 = b"".join(all)
+data2 = b"".join(all) #b""
 
 result = np.frombuffer(data2,dtype="int32") / float (2**15)
 
@@ -52,8 +51,6 @@ with open ('file1.txt', 'w') as f:
     print(len(np.frombuffer(data2,dtype="int32")))
     print("loopnumber: %o, all-length: %s, data2-length: %f, result-length: %a," % (i,len(all), len(data2), len(result)))
     print(p.get_device_info_by_index(inputIndexNumber),)
-
-# result2 = np.where((result > -300) & (result < 300) , 0 , result) 
 
 allresult = 0
 firstloop = True
@@ -71,7 +68,6 @@ for i in range (len(result)):
     else:
         pass
 
-
 resultaverage = allresult/(len(result) - aboveZeroPoint)
 print("平均 %i 最初のゼロ以上の位置 %f"% (resultaverage,aboveZeroPoint))
 result3 = np.arange(len(result))
@@ -80,48 +76,32 @@ for i in range (len(result)):
         result3[i] = result[i]
     else:
         result3[i] = result[i] - resultaverage
-
-
+#直流成分を除いた
 F = np.fft.fft(result3) 
 # FFTの複素数結果を絶対に変換
 F_abs = np.abs(F)
+F_abs2 = F_abs[:int(RATE/2)] #虚像成分を除くために半分にした
 # 振幅をもとの信号に揃える
-F_abs_amp = F_abs / RATE * 2 # 交流成分はデータ数で割って2倍
-
-# F_abs_amp2 = np.where((F_abs_amp < 10) , 0 , F_abs_amp) 
-
-
-# l = [0] * (len(t) - len(result3))
-# result4 = np.insert(result3,0,l)
-# F_abs_amp[0] = F_abs_amp[0] / 2 # 直流成分（今回は扱わないけど）は2倍不要
-
+F_abs_amp = F_abs2 / RATE * 2 # 交流成分はデータ数で割って2倍
 # 周波数軸のデータ作成
-
-
-# F_abs_amp[0:19] = 0
-fq = np.linspace(0, 1.0/T, RATE) # 周波数軸　linspace(開始,終了,分割数)
-amparraynumber = np.where(F_abs_amp > 100) #10以上の位置を所得
+fq = np.linspace(0, RATE/2, RATE/2) # 周波数軸　linspace(開始,終了,分割数) *虚像成分を除くために半分にした
+amparraynumber = np.where(F_abs_amp > 50) #10以上の位置を所得
 biggestAmp = F_abs_amp[np.argmax(F_abs_amp)]
-# print(np.where(F_abs_amp > 10))
 print("最大振幅 %i"%(F_abs_amp[np.argmax(F_abs_amp)]))
-fqarray = fq[amparraynumber] 
-print("F_amp_abs - length %a, amparrraynumber - length %o, fqarray - length %f" % (len(F_abs_amp),len(amparraynumber),len(fqarray)))
+amparraynumber2 = list(itertools.chain.from_iterable(amparraynumber))
+
+print(len(amparraynumber2))
+print("F_amp_abs - length %a, amparrraynumber2 - length %o, " % (len(F_abs_amp),len(amparraynumber2)))
+print(amparraynumber2)
 s = 0
-samples = []
-firstloop = True
+sin_curve = 0
+slen = int(RATE*5)
 print("now generating sound...")
-for i in range (len(amparraynumber)):
-    if firstloop:
-        for j in np.arange(len(fqarray)):
-            firstloop = False
-            s = 1000 * ((F_abs_amp[i]/biggestAmp) *np.sin(2*np.pi*np.arange(RATE*1.0)*fqarray[j]/RATE))#.astype(np.float32)
-            # print(F_abs_amp[i]/biggestAmp)
-            samples.insert(j,s)
-    else:
-        for j in np.arange(len(fqarray)):
-            s = 1000 * ((F_abs_amp[i]/biggestAmp) * np.sin(2*np.pi*np.arange(RATE*1.0)*fqarray[j]/RATE)).astype(np.float32)
-            samples[j] += s
+for i in range (len(amparraynumber2)):
+    s +=  (np.sin(2*np.pi*np.arange(slen)*amparraynumber2[i]/RATE*5) * (F_abs_amp[amparraynumber2[i]]/biggestAmp) )
+
 print("sound generate ended")
+
 
 # print(F_abs_amp)
 # グラフ表示
@@ -129,28 +109,55 @@ fig = plt.figure(figsize=(12, 4))
 
 # plt.plot(samples)
 # 信号のグラフ（時間軸）
-ax2 = fig.add_subplot(121)
+ax2 = fig.add_subplot(131)
 plt.xlabel('time(sec)', fontsize=14)
 plt.ylabel('amplitude', fontsize=14)
 plt.plot(t,result3)
 
 # FFTのグラフ（周波数軸）
-ax2 = fig.add_subplot(122)
+ax2 = fig.add_subplot(132)
 plt.xlabel('freqency(Hz)', fontsize=14)
 plt.ylabel('amplitude', fontsize=14)
 plt.plot(fq[:int(RATE/2)+1], F_abs_amp[:int(RATE/2)+1]) # ナイキスト定数まで表示
 print("plotting graph...")
+
+
+# samples2 = list(itertools.chain.from_iterable(s))
+
+# print("samples_length-%i"%(len(samples2)))
+# samples3[:] = samples
+# samples3 = np.array(s)
+# samples4 = np.frombuffer(samples3,dtype="float64")
+# samples5 = samples4.tobytes()
+# def type_condition(v):
+#     if type(v) is str:
+#         print('type is str')
+#     elif type(v) is int:
+#         print('type is int')
+#     elif type(v) is float:
+#         print('type is float')
+#     else:
+#         print('type is not str, int or float')
+# print("samples %s,samples2 %a,samples3 %s,samples4 %r"%(samples[0].dtype, samples2[0].dtype, samples3[0].dtype,samples4[0].dtype,))
+# print("playing sound")
+# samplesint16 = samples3.astype(np.int16)
+# samplesint16byte = samplesint16.tobytes()
+# # 高速フーリエ変換
+# F2 = np.fft.fft(samples2)
+# 振幅スペクトルを計算
+# Amp = np.abs(F2)
+ax2 = fig.add_subplot(133)
+plt.xlabel('time(sec)', fontsize=14)
+plt.ylabel('amplitude', fontsize=14)
+plt.plot(s)
+# print(Amp)
+# plt.plot(fq, Amp)
+# plt.xlabel('Frequency', fontsize=20)
+# plt.ylabel('Amplitude', fontsize=20)
+# plt.grid()
+
 plt.show()
-samples2 = list(itertools.chain.from_iterable(samples))
-samples3 = np.empty(len(samples2))
-print("samples_length-%i,samples2-length-%s,samples2_dimention-%a "%(len(samples2),len(samples3),samples3.ndim))
-samples2[:] = samples
-samples4 = np.array(samples3)
-samples5 = samples4.tobytes()
-# data3 = b"".join(samples2)
-# sound = np.frombuffer(data3,dtype="int32") / float (2**15)
-print("playing sound")
-stream.write(samples5)
+stream.write(s.astype(np.float32).tostring())
 stream.stop_stream()
 stream.close()
 
