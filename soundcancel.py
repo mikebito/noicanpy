@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt     #グラフ化用
 import itertools
 import struct
 import wave
-
+from subprocess import call 
+import osascript
 
 #設定
 chunk = 2 ** 10        #音声データメモリーサイズ指定
@@ -16,6 +17,8 @@ RECORD_SECONDS = 2        #6秒録音
 inputIndexNumber = int(input('type input index number'))
 outputIndexNumber = int(1)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
+osascript.osascript("set volume output volume 0")
+
 
 p = pyaudio.PyAudio()           #!!!要調べ！！！
 
@@ -130,70 +133,13 @@ s = 0
 sin_curve = 0
 slen = int(RATE*5)
 print("now generating sound...")
-# for i in range (len(amparraynumber2)):
-#     s +=  (np.sin(2*np.pi*np.arange(slen)*amparraynumber2[i]/(RATE*5)) * (F_abs_amp[amparraynumber2[i]]*10000/biggestAmp) )
-# Fs = np.fft.fft(s)
-# Fs_abs = np.abs(Fs)
-# Fs_abs2 = Fs_abs[:int(RATE/2)] #虚像成分を除くために半分にした
-# # 振幅をもとの信号に揃える
-# Fs_abs_amp = Fs_abs2 / RATE * 2 # 交流成分はデータ数で割って2倍
-# # 周波数軸のデータ作成
-# IFs = np.fft.ifft(Fs)
-
-
-
-print("sound generate ended")
-
-
-# print(F_abs_amp)
-# グラフ表示
-fig = plt.figure(figsize=(12, 4))
-
-# plt.plot(samples)
-# 信号のグラフ（時間軸）
-ax2 = fig.add_subplot(161)
-plt.xlabel('time(sec)', fontsize=14)
-plt.ylabel('amplitude', fontsize=14)
-plt.plot(t,result3)
-
-# FFTのグラフ（周波数軸）
-ax2 = fig.add_subplot(162)
-plt.xlabel('freqency(Hz)', fontsize=14)
-plt.ylabel('amplitude', fontsize=14)
-plt.plot(fq[:int(RATE/2)+1], F_abs_amp[:int(RATE/2)+1]) # ナイキスト定数まで表示
-print("plotting graph...")
-
-ax2 = fig.add_subplot(163)
-plt.plot(IF)
-
-
-ax2 = fig.add_subplot(164)
-plt.xlabel('time(sec)', fontsize=14)
-plt.ylabel('amplitude', fontsize=14)
-plt.plot(s)
-
-ax2 = fig.add_subplot(165)
-plt.xlabel('freqency(Hz)', fontsize=14)
-plt.ylabel('amplitude', fontsize=14)
-plt.plot(fq[:int(RATE/2)+1], F3_abs_amp[:int(RATE/2)+1]) # ナイキスト定数まで表示
-
-# ax2 = fig.add_subplot(166)
-# plt.xlabel('freqency(Hz)', fontsize=14)
-# plt.ylabel('amplitude', fontsize=14)
-# plt.plot(fq[:int(RATE/2)+1], Fs_abs_amp[:int(RATE/2)+1])
-# print(Amp)
-# plt.plot(fq, Amp)
-# plt.xlabel('Frequency', fontsize=20)
-# plt.ylabel('Amplitude', fontsize=20)
-# plt.grid()
-
-
-stream.write(IF2.astype(np.float32).tostring())
-stream.stop_stream()
-stream.close()
+IF3 = IF2/1000
+try:
+    while s == 0:
+        stream.write(IF3.astype(np.float32).tostring())
+except KeyboardInterrupt:
+    print ('exception KeyboardInterrupt')
+    stream.stop_stream()
+    stream.close()
 
 p.terminate()
-plt.show()
-
-# plt.plot(WindowHn)
-# plt.show()
