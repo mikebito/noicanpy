@@ -101,6 +101,9 @@ F = np.fft.fft(result4)
 IF = np.fft.ifft(F)
 F3 = np.fft.fft(IF)
 IF2 = np.tile(IF,3)
+IF2average = np.mean(np.abs(IF2))
+averagex10 = IF2average * 100000
+IF3 = np.append(IF2,averagex10)
 # FFTの複素数結果を絶対に変換
 F_abs = np.abs(F)
 F_abs2 = F_abs[:int(RATE/2)] #虚像成分を除くために半分にした
@@ -164,7 +167,7 @@ plt.plot(fq[:int(RATE/2)+1], F_abs_amp[:int(RATE/2)+1]) # ナイキスト定数�
 print("plotting graph...")
 
 ax2 = fig.add_subplot(163)
-plt.plot(IF)
+plt.plot(IF3)
 
 
 ax2 = fig.add_subplot(164)

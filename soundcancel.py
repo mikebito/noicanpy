@@ -7,6 +7,7 @@ import wave
 from subprocess import call 
 import osascript
 
+
 #設定
 chunk = 2 ** 10        #音声データメモリーサイズ指定
 FORMAT = pyaudio.paInt32        #16進数に指定
@@ -17,7 +18,8 @@ RECORD_SECONDS = 2        #6秒録音
 inputIndexNumber = int(input('type input index number'))
 outputIndexNumber = int(1)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
-osascript.osascript("set volume output volume 0")
+# osascript.osascript("set volume output volume 1")
+
 
 
 p = pyaudio.PyAudio()           #!!!要調べ！！！
@@ -133,7 +135,23 @@ s = 0
 sin_curve = 0
 slen = int(RATE*5)
 print("now generating sound...")
-IF3 = IF2/1000
+IF2average = np.mean(np.abs(IF2))
+averagex10 = IF2average * 100
+minusaveragex10 = averagex10 * -1
+IF3 = np.append(IF2,[averagex10,minusaveragex10])
+
+print(IF2average)
+print(averagex10)
+print(np.amax(IF2),np.amax(IF3))
+
+volume = 1
+sound_level = (volume)
+
+for i in range(len(IF3)):
+    chunk = np.fromstring(IF3[i], np.int32)
+
+    chunk = chunk * sound_level
+
 try:
     while s == 0:
         stream.write(IF3.astype(np.float32).tostring())
