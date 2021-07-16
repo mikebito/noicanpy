@@ -4,19 +4,19 @@ import matplotlib.pyplot as plt     #グラフ化用
 import itertools
 import struct
 import wave
-from subprocess import call 
-import osascript
+
+
 
 
 #設定
 chunk = 2 ** 10        #音声データメモリーサイズ指定
 FORMAT = pyaudio.paInt32        #16進数に指定
 CHANNELS = 1                    #モノラルに指定
-RATE = 43008             #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
+RATE = int(16000) #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
 T = 1/RATE
-RECORD_SECONDS = 2        #6秒録音
+RECORD_SECONDS = 3        #6秒録音
 inputIndexNumber = int(input('type input index number'))
-outputIndexNumber = int(1)
+outputIndexNumber = int(14)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
 # osascript.osascript("set volume output volume 1")
 
@@ -112,7 +112,7 @@ F_abs2 = F_abs[:int(RATE/2)] #虚像成分を除くために半分にした
 # 振幅をもとの信号に揃える
 F_abs_amp = F_abs2 / RATE * 2 # 交流成分はデータ数で割って2倍
 # 周波数軸のデータ作成
-fq = np.linspace(0, RATE/2, RATE/2) # 周波数軸　linspace(開始,終了,分割数) *虚像成分を除くために半分にした
+fq = np.linspace(0, int(RATE/2), int(RATE/2)) # 周波数軸　linspace(開始,終了,分割数) *虚像成分を除くために半分にした
 
 F3_abs = np.abs(F3)
 F3_abs2 = F3_abs[:int(RATE/2)] #虚像成分を除くために半分にした
@@ -130,7 +130,6 @@ amparraynumber2 = list(itertools.chain.from_iterable(amparraynumber))
 
 print(len(amparraynumber2))
 print("F_amp_abs - length %a, amparrraynumber2 - length %o, " % (len(F_abs_amp),len(amparraynumber2)))
-print(amparraynumber2)
 s = 0
 sin_curve = 0
 slen = int(RATE*5)
