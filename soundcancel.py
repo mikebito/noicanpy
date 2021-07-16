@@ -12,29 +12,29 @@ import wave
 chunk = 2 ** 10        #音声データメモリーサイズ指定
 FORMAT = pyaudio.paInt32        #16進数に指定
 CHANNELS = 1                    #モノラルに指定
-RATE = int(16000) #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
+RATE = 43008 #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
 T = 1/RATE
 RECORD_SECONDS = 3        #6秒録音
-inputIndexNumber = int(input('type input index number'))
-outputIndexNumber = int(14)
+inputIndexNumber = int(6)
+outputIndexNumber = int(9)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
 # osascript.osascript("set volume output volume 1")
 
 
 
-p = pyaudio.PyAudio()           #!!!要調べ！！！
+p = pyaudio.PyAudio()          
 
- #!!!要調べ！！！
+
 stream = p.open(format = FORMAT,
                 channels = CHANNELS,
-                rate = RATE,
+                rate = RATE
                 input = True,
                 input_device_index = inputIndexNumber,
                 output_device_index = outputIndexNumber,
                 output = True,
                 frames_per_buffer = chunk
 )
- #!!!要調べ！！！
+
 print("Now Recording...")
 all = [] #リスト作成
 for i in range (0,int(RATE / chunk * RECORD_SECONDS)): 
@@ -147,13 +147,13 @@ volume = 1
 sound_level = (volume)
 
 for i in range(len(IF3)):
-    chunk = np.fromstring(IF3[i], np.int32)
+    chunk = np.frombuffer(IF3[i], np.int32)
 
     chunk = chunk * sound_level
 
 try:
     while s == 0:
-        stream.write(IF3.astype(np.float32).tostring())
+        stream.write(IF3.astype(np.float32).tobytes())
 except KeyboardInterrupt:
     print ('exception KeyboardInterrupt')
     stream.stop_stream()
