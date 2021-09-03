@@ -15,8 +15,8 @@ CHANNELS = 1                    #モノラルに指定
 RATE = 43008 #サンプリング速度-サンプリング周波数(、1秒間に実行する標本化（サンプリング）処理の回数のこと)
 T = 1/RATE
 RECORD_SECONDS = 3        #6秒録音
-inputIndexNumber = int(6)
-outputIndexNumber = int(9)
+inputIndexNumber = int(1)
+outputIndexNumber = int(5)
 t = np.arange(0, RATE*T*RECORD_SECONDS, T) #時間軸が1/2倍違う
 # osascript.osascript("set volume output volume 1")
 
@@ -27,7 +27,7 @@ p = pyaudio.PyAudio()
 
 stream = p.open(format = FORMAT,
                 channels = CHANNELS,
-                rate = RATE
+                rate = RATE,
                 input = True,
                 input_device_index = inputIndexNumber,
                 output_device_index = outputIndexNumber,
